@@ -1,74 +1,88 @@
-﻿
-while (true)
+﻿Arrow arrow = GetArrow();
+Console.WriteLine($"That arrow costs {arrow.GetCost()} gold.");
+
+
+
+Arrow GetArrow()
 {
-    ArrowHead headType = (ArrowHead)AskQuestion("Vin Fletcher: \"Ah you would like to order arrows? What head would you like?\" \n0- Steel\n1- Wood\n2- Obsidian", 0, 2);
-    float arrowLength = AskQuestion($"Vin Fletcher: Ah yes, {headType} is a good choice. How many centimeters in length shall they be?", 45, 150);
-    Fletching fletchingType = (Fletching)AskQuestion($"Vin Fletcher: Alright, {arrowLength} cm. What type of fletching would you like? \n0- Plastic\n1- Turkey Feathers\n2- Goose Feathers", 0, 2);
-    int arrowAmount = AskQuestion($"Vin Fletcher: {fletchingType}, perfect. Lastly; How many of these are you wanting made? my maximum per order is 200.", 1, 200);
+    Arrowhead arrowhead = GetArrowheadType();
+    Fletching fletching = GetFletchingType();
+    float length = GetLength();
 
-    Arrow customerArrow = new(headType, arrowLength, fletchingType);
-
-    Console.WriteLine($"Alright, I'll make {arrowAmount} of them. That'll be {customerArrow.GetCost()} gold per arrow; or {(customerArrow.GetCost() * (float)arrowAmount):N0} gold.");
-    Console.WriteLine("Press any key to pay the man... (restart)");
-    Console.ReadKey();
-    Console.Clear();
+    return new Arrow(arrowhead, fletching, length);
 }
 
-int AskQuestion(string questionText, int minRange, int maxRange)
+Arrowhead GetArrowheadType()
 {
-    int pickedValue = minRange - 1;
-    while (true)
+    Console.Write("Arrowhead type (steel, wood, obsidian): ");
+    string input = Console.ReadLine();
+    return input switch
     {
-        Console.WriteLine(questionText);
-        pickedValue = Convert.ToInt32(Console.ReadLine());
-
-        if (pickedValue >= minRange && pickedValue <= maxRange) break;
-
-        Console.WriteLine($"Invalid Input, please enter an integer between {minRange}-{maxRange}.");
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
-        Console.Clear();
-    }
-    return Convert.ToInt32(pickedValue);
+        "steel" => Arrowhead.Steel,
+        "wood" => Arrowhead.Wood,
+        "obsidian" => Arrowhead.Obsidian
+    };
 }
 
-public class Arrow
+Fletching GetFletchingType()
 {
-    private ArrowHead _headType;
-    private float _shaftLength;
-    private Fletching _fletchingType;
-
-    public Arrow()
+    Console.Write("Fletching type (plastic, turkey feather, goose feather): ");
+    string input = Console.ReadLine();
+    return input switch
     {
-        _headType = ArrowHead.Steel;
-        _shaftLength = 75;
-        _fletchingType = Fletching.GooseFeathers;
+        "plastic" => Fletching.Plastic,
+        "turkey feather" => Fletching.TurkeyFeathers,
+        "goose feather" => Fletching.GooseFeathers
+    };
+}
+
+float GetLength()
+{
+    float length = 0;
+
+    while (length < 60 || length > 100)
+    {
+        Console.Write("Arrow length (between 60 and 100): ");
+        length = Convert.ToSingle(Console.ReadLine());
     }
 
-    public Arrow(ArrowHead headType, float shaftLength, Fletching fletchingType)
+    return length;
+}
+
+class Arrow
+{
+    public Arrowhead _arrowhead;
+    public Fletching _fletching;
+    public float _length;
+
+    public Arrow(Arrowhead arrowhead, Fletching fletching, float length)
     {
-        _headType = headType;
-        _shaftLength = shaftLength;
-        _fletchingType = fletchingType;
+        _arrowhead = arrowhead;
+        _fletching = fletching;
+        _length = length;
     }
 
     public float GetCost()
     {
-        float cost = 0.0f;
+        float arrowheadCost = _arrowhead switch
+        {
+            Arrowhead.Steel => 10,
+            Arrowhead.Wood => 3,
+            Arrowhead.Obsidian => 5
+        };
 
-        if (_headType == ArrowHead.Steel) cost += 10.0f;
-        if (_headType == ArrowHead.Wood) cost += 3.0f;
-        if (_headType == ArrowHead.Obsidian) cost += 5.0f;
+        float fletchingCost = _fletching switch
+        {
+            Fletching.Plastic => 10,
+            Fletching.TurkeyFeathers => 5,
+            Fletching.GooseFeathers => 3
+        };
 
-        cost += _shaftLength * 0.05f;
+        float shaftCost = 0.05f * _length;
 
-        if (_fletchingType == Fletching.Plastic) cost += 10.0f;
-        if (_fletchingType == Fletching.TurkeyFeathers) cost += 5.0f;
-        if (_fletchingType == Fletching.GooseFeathers) cost += 3.0f;
-
-        return cost;
+        return arrowheadCost + fletchingCost + shaftCost;
     }
 }
 
-public enum ArrowHead { Steel, Wood, Obsidian }
-public enum Fletching { Plastic, TurkeyFeathers, GooseFeathers }
+enum Arrowhead { Steel, Wood, Obsidian }
+enum Fletching { Plastic, TurkeyFeathers, GooseFeathers }
